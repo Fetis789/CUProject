@@ -20,3 +20,4 @@ def build_messages(pdf_text: str, user_prompt: str):
         },
     ]
 
+

@@ -22,3 +22,4 @@ git push origin main
 Write-Host "`nГотово! Проверьте репозиторий на GitHub." -ForegroundColor Green
 
 
+

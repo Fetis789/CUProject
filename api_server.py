@@ -161,7 +161,7 @@ async def upload_pdf(
 
 
 @app.get("/result/{task_id}")
-async def get_result(task_id: str):
+async def get_result(task_id: str):cur;
     """
     Get processing result by task ID.
 
@@ -218,4 +218,5 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 

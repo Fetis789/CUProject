@@ -22,3 +22,4 @@ def extract_pdf_text(pdf_path: Path) -> str:
 
 
 print(extract_pdf_text(Path(__file__).parent / "grant_files" / "second_generated_grant.pdf"))
+
