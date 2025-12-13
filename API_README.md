@@ -29,7 +29,7 @@ uvicorn api_server:app --host 0.0.0.0 --port 8000
 python api_server.py
 ```
 
-Сервер будет доступен по адресу: `http://localhost:8000`
+Сервер будет доступен по адресу: `https://cu-grant-analyzis-project.onrender.com/`
 
 ## API Endpoints
 
@@ -68,7 +68,7 @@ python api_server.py
 
 **Пример запроса (curl):**
 ```bash
-curl -X POST "http://localhost:8000/upload" \
+curl -X POST "https://cu-grant-analyzis-project.onrender.com/upload" \
   -F "file=@path/to/file.pdf" \
   -F "prompt=Кратко резюмируй документ" \
   -F "model=gpt-4o-mini" \
@@ -79,7 +79,7 @@ curl -X POST "http://localhost:8000/upload" \
 ```python
 import requests
 
-url = "http://localhost:8000/upload"
+url = "https://cu-grant-analyzis-project.onrender.com/upload"
 files = {"file": open("document.pdf", "rb")}
 data = {
     "prompt": "Кратко резюмируй документ",
@@ -130,7 +130,7 @@ print(response.json())
 
 **Пример запроса:**
 ```bash
-curl "http://localhost:8000/result/{task_id}"
+curl "https://cu-grant-analyzis-project.onrender.com/result/{task_id}"
 ```
 
 ### 4. Список всех задач
@@ -171,14 +171,14 @@ uvicorn api_server:app --host 0.0.0.0 --port 8000
 
 2. Загрузите PDF файл:
 ```bash
-curl -X POST "http://localhost:8000/upload" \
+curl -X POST "https://cu-grant-analyzis-project.onrender.com/upload" \
   -F "file=@grant_files/second_generated_grant.pdf" \
   -F "prompt=Сделай краткую суммаризацию проекта"
 ```
 
 3. Получите task_id из ответа и проверьте результат:
 ```bash
-curl "http://localhost:8000/result/{task_id}"
+curl "https://cu-grant-analyzis-project.onrender.com/result/{task_id}"
 ```
 
 4. Повторяйте шаг 3, пока статус не станет "completed" или "error".
