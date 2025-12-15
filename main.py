@@ -9,7 +9,7 @@ Dependencies are listed in `requirements.txt`.
 """
 from __future__ import annotations
 
-import argparse -u main.
+import argparse
 import os
 from pathlib import Path
 
@@ -19,7 +19,7 @@ from pdf_utils import extract_pdf_text
 from prompt_utils import build_messages
 
 
-def call_model(messages, model: str = "gpt-4o-mini", temperature: float = 0.2) -> str:
+def call_model(messages, model: str = "gpt-5-mini", temperature: float = 0.2) -> str:
     """
     Call the OpenAI chat completion API and return the assistant reply text.
     """
@@ -38,7 +38,7 @@ def call_model(messages, model: str = "gpt-4o-mini", temperature: float = 0.2) -
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Parse PDF and query gpt-4o-mini with the PDF content + user prompt."
+        description="Parse PDF and query gpt-5-mini with the PDF content + user prompt."
     )
     parser.add_argument(
         "--prompt",

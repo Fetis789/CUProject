@@ -35,7 +35,7 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 
-def call_model(messages, model: str = "gpt-4o-mini", temperature: float = 0.2) -> str:
+def call_model(messages, model: str = "gpt-5-mini", temperature: float = 0.2) -> str:
     """
     Call the OpenAI chat completion API and return the assistant reply text.
     """
@@ -56,7 +56,7 @@ async def process_pdf_task(
     task_id: str,
     pdf_path: Path,
     prompt: str,
-    model: str = "gpt-4o-mini",
+    model: str = "gpt-5-mini",
     temperature: float = 0.2,
 ):
     """
@@ -218,5 +218,7 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
 
 
