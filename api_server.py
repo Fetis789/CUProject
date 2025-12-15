@@ -161,7 +161,7 @@ async def upload_pdf(
 
 
 @app.get("/result/{task_id}")
-async def get_result(task_id: str):cur
+async def get_result(task_id: str):
     """
     Get processing result by task ID.
 
