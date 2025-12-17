@@ -73,9 +73,11 @@ def call_model(messages, model: str = "openai/gpt-4o", temperature: float = 0.2)
         },
     )
 
+    # Увеличенный таймаут для больших PDF и сложных промптов
     response = client.chat.completions.create(
         model=model,
         messages=messages,
+        timeout=300,  # 5 минут таймаут для API вызова
         # Примечание: некоторые модели/провайдеры в OpenRouter могут не поддерживать temperature.
         # Если словишь 400 — попробуй убрать temperature полностью.
         # temperature=0.2,

@@ -8,6 +8,7 @@ load_dotenv()
 
 import pandas as pd
 import requests
+from requests.exceptions import Timeout, RequestException
 import streamlit as st
 
 #API_URL = os.getenv("API_URL", "http://localhost:8000")
@@ -28,7 +29,8 @@ class TaskItem:
 
 def api_health() -> bool:
     try:
-        r = requests.get(f"{API_URL}/health", timeout=10)
+        # Увеличенный таймаут для Render (может быть cold start)
+        r = requests.get(f"{API_URL}/health", timeout=30)
         return r.status_code == 200
     except Exception:
         return False
@@ -37,13 +39,15 @@ def api_health() -> bool:
 def api_upload_pdf(pdf_bytes: bytes, filename: str, prompt: str, model: str, temperature: float) -> str:
     files = {"file": (filename, pdf_bytes, "application/pdf")}
     data = {"prompt": prompt, "model": model, "temperature": str(temperature)}
-    r = requests.post(f"{API_URL}/upload", files=files, data=data, timeout=120)
+    # Увеличенный таймаут для загрузки больших файлов на Render
+    r = requests.post(f"{API_URL}/upload", files=files, data=data, timeout=180)
     r.raise_for_status()
     return r.json()["task_id"]
 
 
 def api_get_result(task_id: str) -> Dict:
-    r = requests.get(f"{API_URL}/result/{task_id}", timeout=30)
+    # Увеличенный таймаут для Render (может быть медленным из-за cold start)
+    r = requests.get(f"{API_URL}/result/{task_id}", timeout=120)
     r.raise_for_status()
     return r.json()
 
@@ -210,6 +214,20 @@ with tabs[1]:
                     temperature=temperature,
                 )
                 created.append(TaskItem(filename=f.name, task_id=task_id))
+            except Timeout:
+                created.append(TaskItem(
+                    filename=f.name, 
+                    task_id="—", 
+                    status="error", 
+                    error="Таймаут при загрузке. Сервер может быть занят или перегружен. Попробуйте позже."
+                ))
+            except RequestException as e:
+                created.append(TaskItem(
+                    filename=f.name, 
+                    task_id="—", 
+                    status="error", 
+                    error=f"Ошибка сети при загрузке: {str(e)}"
+                ))
             except Exception as e:
                 created.append(TaskItem(filename=f.name, task_id="—", status="error", error=str(e)))
 
@@ -244,6 +262,12 @@ with tabs[2]:
                                 t.result = payload.get("result")
                             if t.status == "error":
                                 t.error = payload.get("error", "Unknown error")
+                        except Timeout:
+                            # Не меняем статус на error при таймауте - возможно, обработка еще идет
+                            t.message = "Таймаут запроса. Сервер может быть занят. Попробуйте обновить позже."
+                        except RequestException as e:
+                            t.status = "error"
+                            t.error = f"Ошибка сети: {str(e)}"
                         except Exception as e:
                             t.status = "error"
                             t.error = str(e)
@@ -265,6 +289,12 @@ with tabs[2]:
                                     t.result = payload.get("result")
                                 if t.status == "error":
                                     t.error = payload.get("error", "Unknown error")
+                            except Timeout:
+                                # Не меняем статус на error при таймауте - возможно, обработка еще идет
+                                t.message = "Таймаут запроса. Сервер может быть занят."
+                            except RequestException as e:
+                                t.status = "error"
+                                t.error = f"Ошибка сети: {str(e)}"
                             except Exception as e:
                                 t.status = "error"
                                 t.error = str(e)
