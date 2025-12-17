@@ -23,6 +23,9 @@ from openai import OpenAI
 
 from pdf_utils import extract_pdf_text
 from prompt_utils import build_messages
+from dotenv import load_dotenv 
+
+load_dotenv()
 
 app = FastAPI(title="PDF Processing API", version="1.0.0")
 
@@ -35,7 +38,7 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 
-def call_model(messages, model: str = "gpt-5-mini", temperature: float = 0.2) -> str:
+'''def call_model(messages, model: str = "gpt-5-mini", temperature: float = 0.2) -> str:
     """
     Call the OpenAI chat completion API and return the assistant reply text.
     """
@@ -49,6 +52,35 @@ def call_model(messages, model: str = "gpt-5-mini", temperature: float = 0.2) ->
         messages=messages,
         temperature=temperature,
     )
+    return response.choices[0].message.content'''
+
+#Вариант через Openrouter
+def call_model(messages, model: str = "openai/gpt-5") -> str:
+    """
+    Call OpenRouter (OpenAI-compatible) chat completion API and return assistant reply text.
+    """
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENROUTER_API_KEY is not set in the environment.")
+
+    client = OpenAI(
+        api_key=api_key,
+        base_url="https://openrouter.ai/api/v1",
+        # Рекомендуемые OpenRouter заголовки (идентификация приложения)
+        default_headers={
+            "HTTP-Referer": os.getenv("OPENROUTER_SITE_URL", "https://cu-grant-analyzis-project.onrender.com"),
+            "X-Title": os.getenv("OPENROUTER_APP_NAME", "CU Grant Analysis Project"),
+        },
+    )
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        # Примечание: некоторые модели/провайдеры в OpenRouter могут не поддерживать temperature.
+        # Если словишь 400 — попробуй убрать temperature полностью.
+        # temperature=0.2,
+    )
+
     return response.choices[0].message.content
 
 
