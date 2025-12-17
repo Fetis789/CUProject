@@ -55,7 +55,7 @@ UPLOAD_DIR.mkdir(exist_ok=True)
     return response.choices[0].message.content'''
 
 #Вариант через Openrouter
-def call_model(messages, model: str = "openai/gpt-5", temperature: float = 0.2) -> str:
+def call_model(messages, model: str = "openai/gpt-4o", temperature: float = 0.2) -> str:
     """
     Call OpenRouter (OpenAI-compatible) chat completion API and return assistant reply text.
     """
@@ -88,7 +88,7 @@ async def process_pdf_task(
     task_id: str,
     pdf_path: Path,
     prompt: str,
-    model: str = "gpt-5-mini",
+    model: str = "openai/gpt-4o",
     temperature: float = 0.2,
 ):
     """
@@ -142,7 +142,7 @@ async def upload_pdf(
         description="User prompt for the model",
     ),
     model: Optional[str] = Form(
-        default="gpt-4o-mini", description="OpenAI model to use"
+        default="openai/gpt-4o", description="OpenAI model to use"
     ),
     temperature: Optional[float] = Form(
         default=0.2, description="Sampling temperature (0.0-2.0)"
