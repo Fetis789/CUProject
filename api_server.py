@@ -55,7 +55,7 @@ UPLOAD_DIR.mkdir(exist_ok=True)
     return response.choices[0].message.content'''
 
 #Вариант через Openrouter
-def call_model(messages, model: str = "openai/gpt-5") -> str:
+def call_model(messages, model: str = "openai/gpt-5", temperature: float = 0.2) -> str:
     """
     Call OpenRouter (OpenAI-compatible) chat completion API and return assistant reply text.
     """
