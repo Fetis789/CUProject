@@ -21,8 +21,5 @@ def extract_pdf_text(pdf_path: Path) -> str:
     return "\n\n".join(parts).strip()
 
 
-#print(extract_pdf_text(Path(__file__).parent / "grant_files" / "second_generated_grant.pdf"))
 
-text = extract_pdf_text(Path(__file__).parent / "grant_files" / "application_project.pdf")
-print(text[:1000])
 
