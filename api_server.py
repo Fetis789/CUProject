@@ -251,6 +251,8 @@ async def list_tasks():
 if __name__ == "__main__":
     import uvicorn
 
+    # Для локального тестирования: host="0.0.0.0" или "127.0.0.1" или "localhost"
+    # host="0.0.0.0" позволяет принимать подключения со всех интерфейсов (включая localhost)
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
