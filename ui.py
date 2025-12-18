@@ -12,8 +12,8 @@ from requests.exceptions import Timeout, RequestException
 import streamlit as st
 
 #API_URL = os.getenv("API_URL", "http://localhost:8000")
-API_URL = "http://localhost:8000"
-#API_URL = "https://cu-grant-analyzis-project.onrender.com"  # Внешний URL для продакшена
+#API_URL = "http://localhost:8000"
+API_URL = "https://cu-grant-analyzis-project.onrender.com"  # Внешний URL для продакшена
 
 
 
@@ -62,7 +62,7 @@ def build_prompt_from_form(cfg: Dict) -> str:
     out_format = """\
 Верни ответ СТРОГО в формате:
 1) Краткое резюме (5-7 буллетов)
-2) Соответствие рекомендациям по оформлению заявок (да/нет + объяснение). Уточни,  каких моментах есть нессответствие, если оно есть.
+2) Соответствие проекта рекомендациям по оформлению заявок (да/нет + объяснение), которые были выданы тебе ранее. Уточни, в каких моментах есть нессответствие, если оно есть.
 3) Сильные стороны (3-5 буллетов)
 4) Риски/красные флаги (3-5 буллетов)
 5) Ответы по критериям эксперта (таблица: критерий -> оценка 1-5 -> аргументы)
