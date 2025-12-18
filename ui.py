@@ -363,15 +363,9 @@ with tabs[2]:
                 st.info("Результат появится после завершения обработки.")
             else:
                 st.markdown("**Ответ модели:**")
-                # Контейнер с фиксированной высотой и прокруткой для Markdown контента
-                st.markdown(
-                    f"""
-                    <div style="max-height: 420px; overflow-y: auto; border: 1px solid #e0e0e0; padding: 1rem; border-radius: 0.25rem; background-color: #fafafa;">
-                        {selected.result or ""}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                # Используем чистый Markdown для правильного рендеринга заголовков и форматирования
+                # Streamlit автоматически добавит прокрутку для длинного контента
+                st.markdown(selected.result or "")
 
         with right:
             st.markdown("### Решение эксперта")
