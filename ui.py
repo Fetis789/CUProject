@@ -37,9 +37,14 @@ def api_health() -> bool:
         return False
 
 
-def api_upload_pdf(pdf_bytes: bytes, filename: str, prompt: str, model: str, temperature: float) -> str:
+def api_upload_pdf(pdf_bytes: bytes, filename: str, prompt: str, model: str, temperature: float, organization: str = "ФПИ") -> str:
     files = {"file": (filename, pdf_bytes, "application/pdf")}
-    data = {"prompt": prompt, "model": model, "temperature": str(temperature)}
+    data = {
+        "prompt": prompt, 
+        "model": model, 
+        "temperature": str(temperature),
+        "organization": organization
+    }
     # Увеличенный таймаут для загрузки больших файлов на Render
     r = requests.post(f"{API_URL}/upload", files=files, data=data, timeout=180)
     r.raise_for_status()
@@ -126,6 +131,10 @@ with st.sidebar:
     ]
     model = st.selectbox("Model", options=model_options, index=0)
     temperature = st.slider("Temperature", 0.0, 1.5, 0.2, 0.05)
+    
+    st.divider()
+    st.subheader("Организация")
+    organization = st.selectbox("Организация", options=["ФПИ", "ЦУ"], index=0)
 
 tabs = st.tabs(["1) Настройка эксперта", "2) Загрузка PDF", "3) Очередь / результаты"])
 
@@ -220,6 +229,7 @@ with tabs[1]:
                     prompt=st.session_state.generated_prompt,
                     model=model,
                     temperature=temperature,
+                    organization=organization,
                 )
                 created.append(TaskItem(filename=f.name, task_id=task_id))
             except Timeout:
