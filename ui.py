@@ -352,7 +352,16 @@ with tabs[2]:
             if selected.status != "completed":
                 st.info("Результат появится после завершения обработки.")
             else:
-                st.text_area("Ответ модели", value=selected.result or "", height=420)
+                st.markdown("**Ответ модели:**")
+                # Контейнер с фиксированной высотой и прокруткой для Markdown контента
+                st.markdown(
+                    f"""
+                    <div style="max-height: 420px; overflow-y: auto; border: 1px solid #e0e0e0; padding: 1rem; border-radius: 0.25rem; background-color: #fafafa;">
+                        {selected.result or ""}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
         with right:
             st.markdown("### Решение эксперта")
