@@ -116,7 +116,14 @@ with st.sidebar:
 
     st.divider()
     st.subheader("Параметры модели")
-    model = st.text_input("Model", value="openai/gpt-4o")
+    model_options = [
+        "openai/gpt-4o",
+        "openai/gpt-4o-mini",
+        "openai/gpt-4-turbo",
+        "openai/gpt-3.5-turbo",
+        "openai/gpt-5"
+    ]
+    model = st.selectbox("Model", options=model_options, index=0)
     temperature = st.slider("Temperature", 0.0, 1.5, 0.2, 0.05)
 
 tabs = st.tabs(["1) Настройка эксперта", "2) Загрузка PDF", "3) Очередь / результаты"])
