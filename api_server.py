@@ -92,6 +92,7 @@ async def process_pdf_task(
     prompt: str,
     model: str = "openai/gpt-4o",
     temperature: float = 0.2,
+    organization: str = "ФПИ",
 ):
     """
     Asynchronously process PDF file and store result.
@@ -108,7 +109,7 @@ async def process_pdf_task(
         task_results[task_id]["message"] = "Calling OpenAI API..."
 
         # Build messages and call model
-        messages = build_messages(pdf_text, prompt)
+        messages = build_messages(pdf_text, prompt, organization=organization)
         result = call_model(messages, model=model, temperature=temperature)
 
         # Store result
@@ -149,6 +150,9 @@ async def upload_pdf(
     temperature: Optional[float] = Form(
         default=0.2, description="Sampling temperature (0.0-2.0)"
     ),
+    organization: Optional[str] = Form(
+        default="ФПИ", description="Организация: 'ФПИ' или 'ЦУ'"
+    ),
 ):
     """
     Upload PDF file and start processing.
@@ -179,9 +183,16 @@ async def upload_pdf(
         "error": None,
     }
 
+    # Validate organization parameter
+    if organization not in ["ФПИ", "ЦУ"]:
+        raise HTTPException(
+            status_code=400, 
+            detail="organization must be either 'ФПИ' or 'ЦУ'"
+        )
+
     # Start async processing
     asyncio.create_task(
-        process_pdf_task(task_id, file_path, prompt, model, temperature)
+        process_pdf_task(task_id, file_path, prompt, model, temperature, organization)
     )
 
     return JSONResponse(

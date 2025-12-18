@@ -39,7 +39,7 @@ load_dotenv()
     return response.choices[0].message.content'''
 
 #Вариант через Openrouter
-def call_model(messages, model: str = "openai/gpt-5") -> str:
+def call_model(messages, model: str = "openai/gpt-4o") -> str:
     """
     Call OpenRouter (OpenAI-compatible) chat completion API and return assistant reply text.
     """
@@ -75,20 +75,30 @@ def main():
     parser.add_argument(
         "--prompt",
         "-p",
-        default="Сделай краткую суммаризацию проекта, представленного в документе.",
+        default="Проверь, удовлетворяет ли проект рекомендациям по оформлению заявок.",
         required=False,
-        help="User prompt to pass to the model (e.g., 'Кратко резюмируй документ').",
+        help="User prompt to pass to the model (e.g., 'Проверь, удовлетворяет ли проект рекомендациям по оформлению заявок.').",
     )
+
     parser.add_argument(
         "--model",
-        default="openai/gpt-5",
-        help="OpenAI chat model to use (default: gpt-5).",
+        default="openai/gpt-4o",
+        help="OpenAI chat model to use (default: gpt-4o).",
     )
+
+
     parser.add_argument(
         "--pdf",
         type=Path,
-        default=Path(__file__).parent / "grant_files" / "second_generated_grant.pdf",
+        default=Path(__file__).parent / "grant_files" / "application_project.pdf",
         help="Path to the PDF file.",
+    )
+
+    parser.add_argument(
+        "--organization",
+        default="ФПИ",
+        help="Organization to use (default: ФПИ).",
+        choices=["ФПИ", "ЦУ"],
     )
 
     #Температуру в итоге убрали
@@ -108,7 +118,8 @@ def main():
     pdf_text = extract_pdf_text(pdf_path)
     
     print(f'Начало текста: {pdf_text[:100]}')
-    messages = build_messages(pdf_text, args.prompt)
+    messages = build_messages(pdf_text, args.prompt, args.organization)
+    print("Промпт: ", messages[:300])
     print('Вызываем модель...')
     reply = call_model(messages, model=args.model)
     print(reply)
