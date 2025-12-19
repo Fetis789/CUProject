@@ -23,13 +23,11 @@ def extract_pdf_text(pdf_path: Path, type: str = "application") -> str:
         return "\n\n".join(parts).strip()
     elif type == "presentation":
         for page in reader.pages:
-            if use_layout:
-                text: Optional[str] = page.extract_text(
-                    extraction_mode="layout",
-                    layout_mode_space_vertically=False,
-                )
-            else:
-                text = page.extract_text()
+            # Для презентаций используем layout mode для лучшего извлечения текста
+            text: Optional[str] = page.extract_text(
+                extraction_mode="layout",
+                layout_mode_space_vertically=False,
+            )
 
             cleaned = (text or "").strip()
             if cleaned:

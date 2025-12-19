@@ -101,6 +101,13 @@ def main():
         choices=["ФПИ", "ЦУ"],
     )
 
+    parser.add_argument(
+        "--type",
+        default="application",
+        help="Type of PDF: 'application' (standard text extraction) or 'presentation' (layout mode extraction)",
+        choices=["application", "presentation"],
+    )
+
     #Температуру в итоге убрали
     '''parser.add_argument(
         "--temperature",
@@ -115,11 +122,12 @@ def main():
     if not pdf_path.exists():
         raise FileNotFoundError(f"PDF not found: {pdf_path}")
 
-    pdf_text = extract_pdf_text(pdf_path)
+    pdf_text = extract_pdf_text(pdf_path, type=args.type)
     
+    print(f'Тип обработки: {args.type}')
     print(f'Начало текста: {pdf_text[:100]}')
     messages = build_messages(pdf_text, args.prompt, args.organization)
-    print("Промпт: ", messages[:300])
+    print("Промпт: ", str(messages)[:300])
     print('Вызываем модель...')
     reply = call_model(messages, model=args.model)
     print(reply)
