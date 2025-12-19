@@ -11,7 +11,7 @@ import requests
 from requests.exceptions import Timeout, RequestException
 import streamlit as st
 
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+API_URL = os.getenv("API_URL", "https://cu-grant-analyzis-project.onrender.com")
 #API_URL = "http://localhost:8000"
 #API_URL = "https://cu-grant-analyzis-project.onrender.com"  # Внешний URL для продакшена
 
@@ -66,7 +66,14 @@ def build_prompt_from_form(cfg: Dict) -> str:
 2) Соответствие проекта рекомендациям по оформлению заявок (да/нет + объяснение), которые были выданы тебе ранее. Уточни, в каких моментах есть нессответствие, если оно есть.
 3) Сильные стороны (3-5 буллетов)
 4) Риски/красные флаги (3-5 буллетов)
-5) Ответы по критериям эксперта (таблица: критерий -> оценка 1-5 -> аргументы)
+5) Ответы по критериям эксперта (таблица в формате Markdown):
+   Используй ТОЧНО такой формат таблицы:
+   | Критерий | Оценка (1-5) | Аргументы |
+   |----------|--------------|-----------|
+   | Название критерия | 4 | Аргумент 1; Аргумент 2; Аргумент 3 |
+   | Другой критерий | 5 | Аргумент 1; Аргумент 2 |
+   
+   ВАЖНО: Каждая строка таблицы должна быть на отдельной строке. Аргументы разделяй точкой с запятой (;).
 6) Рекомендация (поддержать / отклонить / на доработку) + почему
 """
 
@@ -136,7 +143,6 @@ with st.sidebar:
     st.divider()
     st.subheader("Организация и тип документа")
     organization = st.selectbox("Организация", options=["ФПИ", "ЦУ"], index=0)
-
     pdf_type_display = st.selectbox("Тип документа", options=["Заявка", "Презентация"], index=0)
     # Маппинг: "Заявка" -> "application", "Презентация" -> "presentation"
     pdf_type = "application" if pdf_type_display == "Заявка" else "presentation"
