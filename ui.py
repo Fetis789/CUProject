@@ -10,6 +10,7 @@ import pandas as pd
 import requests
 from requests.exceptions import Timeout, RequestException
 import streamlit as st
+import json
 
 #API_URL = os.getenv("API_URL", "https://cu-grant-analyzis-project.onrender.com")
 API_URL = "http://localhost:8000"
@@ -60,23 +61,40 @@ def api_get_result(task_id: str) -> Dict:
 
 def build_prompt_from_form(cfg: Dict) -> str:
     out_format = """\
-Верни ответ СТРОГО в формате:
-1) Краткое резюме (5-7 буллетов)
-2) Соответствие проекта рекомендациям по оформлению заявок (да/нет + объяснение), которые были выданы тебе ранее. Уточни, в каких моментах есть нессответствие, если оно есть.
-3) Сильные стороны (3-5 буллетов)
-4) Риски/красные флаги (3-5 буллетов)
-5) Ответы по критериям эксперта - ОБЯЗАТЕЛЬНО в формате таблицы, которая будет конвертироваться в Markdown:
-Формат таблицы (СТРОГО соблюдай):
-| Критерий | Оценка (1-5) | Аргументы |
-|----------|--------------|-----------|
-| Название критерия 1 | 4 | Аргумент 1; Аргумент 2; Аргумент 3 |
-| Название критерия 2 | 5 | Аргумент 1; Аргумент 2 |
-ВАЖНО: 
-- Каждая строка таблицы на отдельной строке
-- НЕ используй переносы строк внутри ячеек
-- Аргументы разделяй точкой с запятой и пробелом (; )
-- Используй ТОЛЬКО формат таблицы Markdown, никаких других форматов
-6) Рекомендация (поддержать / отклонить / на доработку) + почему
+Верни ответ СТРОГО в JSON (один JSON-объект, без ```
+Если данных недостаточно — пиши null или "Не указано" (но ключи не пропускай).
+
+Значение полей:
+- summary_bullets: 5–7 коротких буллетов (1 строка = 1 мысль) о сути проекта, цели, целевой аудитории, продукте/результате, стадии готовности.
+- format_compliance.is_compliant: true/false — соответствует ли заявка рекомендациям по оформлению заявок, которые были выданы ранее (если таких рекомендаций нет — оцени базовую структурность и полноту).
+- format_compliance.explanation: 3-5 буллетов, что именно соблюдено/нарушено.
+- strengths: 3–5 буллетов сильных сторон (конкретика: технология/рынок/команда/партнёры/экономика/уникальность).
+- risks: 3–5 буллетов рисков/красных флагов (конкретика: сроки, TRL, данные, регуляторика, бюджет, зависимости, неопределённости).
+- expert_criteria: массив строк по каждому критерию эксперта из списка ниже. 
+  Для каждого критерия:
+  * criterion: точное название критерия (как в списке).
+  * score: одна из оценок: "Низкая" | "Средняя" | "Высокая" | "Не определено".
+  * rationale: 1 строка обоснования; аргументы разделяй "; "; НЕ используй символ "|" и переносы строк.
+- recommendation.decision: одно из: "поддержать" | "отклонить" | "на доработку".
+- recommendation.why: 2–4 предложения почему именно так (со ссылкой на ключевые критерии/риски).
+
+JSON должен быть валидным (двойные кавычки, без комментариев).
+
+Пример (формат и стиль):
+{
+  "summary_bullets": ["Проект: ...", "Цель: ...", "Результат: ...", "Стадия: ...", "Запрос гранта: ..."],
+  "format_compliance": {"is_compliant": false, "explanation": ["Нет ...", "Не подтвержено ...",  "Нет ...", "Не указано ..."]},
+  "strengths": ["Есть ...", "Понятная ...", "Подтверждён ..."],
+  "risks": ["Нет ...", "Сроки ...", "Зависимость ..."],
+  "expert_criteria": [
+    {"criterion": "Техническая реализуемость", "score": "Средняя", "rationale": "Есть архитектура; нет прототипа; не описаны метрики"},
+    {"criterion": "Реалистичность сроков", "score": "Не определено", "rationale": "Нет дорожной карты; нет оценок трудозатрат"}
+  ],
+  "recommendation": {"decision": "на доработку", "why": "Нужно ...; без этого риск ..."}
+}
+
+Критерии для expert_criteria бери ТОЛЬКО из списка "Критерии, по которым эксперт принимает решение" ниже.
+На каждый критерий — ровно один объект в expert_criteria, в том же порядке.
 """
 
     criteria_lines = "\n".join([f"- {c.strip()}" for c in cfg.get("criteria_list", []) if c.strip()])
@@ -100,6 +118,10 @@ def build_prompt_from_form(cfg: Dict) -> str:
 {out_format}
 """
     return prompt
+
+def parse_model_json(text: str) -> dict:
+    # Минимально: ожидаем “чистый JSON”
+    return json.loads(text)
 
 
 def ensure_state():
@@ -379,7 +401,48 @@ with tabs[2]:
                 st.markdown("**Ответ модели:**")
                 # Используем чистый Markdown для правильного рендеринга заголовков и форматирования
                 # Streamlit автоматически добавит прокрутку для длинного контента
-                st.markdown(selected.result or "")
+                #st.markdown(selected.result or "")
+                try:
+                    data = parse_model_json(selected.result or "")
+
+                    st.subheader("Краткое резюме")
+                    st.markdown("\n".join([f"- {x}" for x in data.get("summary_bullets", [])]))
+
+                    # 2) format_compliance
+                    st.subheader("Соответствие оформлению")
+                    fc = data.get("format_compliance", {}) or {}
+                    is_ok = fc.get("is_compliant", None)
+                    st.write("Да" if is_ok is True else ("Нет" if is_ok is False else "Не определено"))
+                    #st.write(fc.get("explanation", ""))
+                    st.markdown("\n".join([f"- {x}" for x in fc.get("explanation", [])]))
+
+                    # 3) strengths
+                    st.subheader("Сильные стороны")
+                    st.markdown("\n".join([f"- {x}" for x in data.get("strengths", [])]))
+
+                    # 4) risks
+                    st.subheader("Риски / красные флаги")
+                    st.markdown("\n".join([f"- {x}" for x in data.get("risks", [])]))
+
+                    # 5) criteria table (как было)
+                    st.subheader("Ответы по критериям эксперта")
+                    rows = data.get("expert_criteria", [])
+                    df = pd.DataFrame(rows, columns=["criterion", "score", "rationale"]).rename(columns={
+                        "criterion": "Критерий",
+                        "score": "Оценка",
+                        "rationale": "Обоснование",
+                    })
+                    st.dataframe(df, use_container_width=True)
+
+                    # 6) recommendation (как было)
+                    st.subheader("Рекомендация")
+                    rec = data.get("recommendation", {}) or {}
+                    st.write(f"Итог: {rec.get('decision','')}")
+                    st.write(rec.get("why",""))
+
+                except Exception as e:
+                    st.error(f"Не удалось распарсить JSON ответа модели: {e}")
+                    st.code(selected.result or "")
 
         with right:
             st.markdown("### Решение эксперта")

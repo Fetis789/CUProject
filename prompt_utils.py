@@ -68,8 +68,8 @@ def build_messages(pdf_text: str, user_prompt: str, organization: str = "ФПИ"
     # Формируем системный промпт
     system_content = "Ты — ассистент, который отвечает, опираясь на текст PDF. Отвечай кратко и по делу."
 
-    system_content += "\n\nВАЖНО: Весь свой ответ выводи в формате, подходящем для Markdown."
-    system_content += "\n\nВАЖНО: Для таблиц используй правильный формат Markdown:"
+    #system_content += "\n\nВАЖНО: Весь свой ответ выводи в формате, подходящем для Markdown."
+    #system_content += "\n\nВАЖНО: Для таблиц используй правильный формат Markdown:"
     
     # Добавляем рекомендации, если они загружены
     if grant_rules:
