@@ -14,8 +14,8 @@ import streamlit.components.v1 as components
 import streamlit as st
 import json
 
-#API_URL = os.getenv("API_URL", "https://cu-grant-analyzis-project.onrender.com")
-API_URL = "http://localhost:8000"
+API_URL = os.getenv("API_URL", "https://cu-grant-analyzis-project.onrender.com")
+#API_URL = "http://localhost:8000"
 
 
 
