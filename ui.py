@@ -7,8 +7,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import pandas as pd
+import html
 import requests
 from requests.exceptions import Timeout, RequestException
+import streamlit.components.v1 as components
 import streamlit as st
 import json
 
@@ -122,6 +124,26 @@ JSON должен быть валидным (двойные кавычки, бе
 def parse_model_json(text: str) -> dict:
     # Минимально: ожидаем “чистый JSON”
     return json.loads(text)
+
+def wrap_rationale(text: str, max_line_len: int = 70) -> str:
+    if not text:
+        return ""
+    parts = [p.strip() for p in str(text).split(";") if p.strip()]
+    if len(parts) > 1:
+        lines, cur = [], ""
+        for p in parts:
+            chunk = p if not cur else cur + "; " + p
+            if len(chunk) <= max_line_len:
+                cur = chunk
+            else:
+                if cur:
+                    lines.append(cur)
+                cur = p
+        if cur:
+            lines.append(cur)
+        return "\n".join(lines)
+    s = str(text).strip()
+    return "\n".join([s[i:i+max_line_len] for i in range(0, len(s), max_line_len)])
 
 
 def ensure_state():
@@ -432,7 +454,30 @@ with tabs[2]:
                         "score": "Оценка",
                         "rationale": "Обоснование",
                     })
-                    st.dataframe(df, use_container_width=True)
+
+                    # переносы строк
+                    df["Обоснование"] = df["Обоснование"].map(lambda x: wrap_rationale(x, 70))
+
+                    # Экранируем текст ячеек, но потом превращаем \n в <br>
+                    for col in ["Критерий", "Оценка", "Обоснование"]:
+                        df[col] = df[col].astype(str).map(html.escape)
+
+                    df["Обоснование"] = df["Обоснование"].str.replace("\n", "<br>", regex=False)
+
+                    css = """
+                    <style>
+                    table.dataframe { width: 100%; border-collapse: collapse; }
+                    table.dataframe th, table.dataframe td { 
+                    border: 1px solid #ddd; 
+                    padding: 6px 8px;
+                    vertical-align: top;
+                    }
+                    table.dataframe td { word-break: break-word; }
+                    </style>
+                    """
+
+                    html_table = css + df.to_html(index=False, escape=False)  # escape=False, т.к. уже экранировали сами
+                    components.html(html_table, height=420, scrolling=True)
 
                     # 6) recommendation (как было)
                     st.subheader("Рекомендация")
