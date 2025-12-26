@@ -14,6 +14,7 @@ def extract_pdf_text(pdf_path: Path, type: str = "application") -> str:
     reader = PdfReader(str(pdf_path))
     parts: List[str] = []
 
+
     if type == "application":
         for page in reader.pages:
             text = page.extract_text() or ""
