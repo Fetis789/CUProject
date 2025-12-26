@@ -11,8 +11,8 @@ import requests
 from requests.exceptions import Timeout, RequestException
 import streamlit as st
 
-#API_URL = os.getenv("API_URL", "https://cu-grant-analyzis-project.onrender.com")
-API_URL = "http://localhost:8000"
+API_URL = os.getenv("API_URL", "https://cu-grant-analyzis-project.onrender.com")
+#API_URL = "http://localhost:8000"
 
 
 
